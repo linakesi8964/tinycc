@@ -19,8 +19,8 @@ have large indentation) while most are indented with 4 spaces.
 TCC is mostly implemented in C90. Do not use any non-C90 features
 that are not already in use.
 
-Non-C90 features currently in use, as revealed by
-./configure --extra-cflags="-std=c90 -Wpedantic":
+Non-C90 features currently in use (visible with -std=c90 -Wpedantic
+in the C source flags in build.zig):
 
 - long long (including "LL" constants)
 - inline
@@ -32,40 +32,12 @@ Non-C90 features currently in use, as revealed by
 
     Testing
 
-A simple "make test" is sufficient for some simple changes. However,
-before committing a change consider performing some of the following
-additional tests:
+A simple "zig build test" is sufficient for some simple changes. For
+changes to code generation, linking or platform support, also test the
+relevant architectures and both static and shared embedding libraries:
 
-- Build and run "make test" on several architectures.
+    zig build test -Doptimize=ReleaseFast
+    zig build test -Dshared=true
+    zig build tests2 -Dtest-filter=139_
 
-- Build with ./configure --enable-cross.
-
-- If the generation of relocations has been changed, try compiling
-  with TCC and linking with GCC/Clang. If the linker has been
-  modified, try compiling with GCC/Clang and linking with TCC.
-
-- Test with ASan/UBSan to detect memory corruption and undefined behaviour:
-
-make clean
-./configure
-make
-make test
-cp libtcc.a libtcc.a.hide
-
-make clean
-./configure --extra-cflags="-fsanitize=address,undefined -g"
-make
-cp libtcc.a.hide libtcc.a
-make test
-
-- Test with Valgrind to detect some uses of uninitialised values:
-
-make clean
-./configure
-make
-# On Intel, because Valgrind does floating-point arithmetic differently:
-( cd tests && gcc -I.. tcctest.c && valgrind -q ./a.out > test.ref )
-make test TCC="valgrind -q --leak-check=full `pwd`/tcc -B`pwd` -I`pwd`"
-
-  (Because of how VLAs are implemented, invalid reads are expected
-  with 79_vla_continue.)
+See README and "zig build --help" for target and configuration options.

@@ -1425,7 +1425,7 @@ Notes:
 @item Available for all targets and platforms supported by TCC, except
 the TMS320C67xx target. The checking code is only built for the native
 compiler, and can be left out with @option{--config-bcheck=no} at
-configure time.
+build configuration time.
 @item The generated code is slower and bigger.
 @item The bound checking code is not included in shared libraries. The main
 executable should always be compiled with the @option{-b}.
@@ -1727,7 +1727,7 @@ are used when debugging is active and stabs debug information is selected
 @itemx dwarf_line_str_section
 are used when debugging is active and dwarf debug information is
 selected, which is the default on macOS and Android and can be enabled
-elsewhere with the @option{--config-dwarf} option of @command{configure}
+elsewhere with @command{zig build -Ddwarf=4}
 
 @item tcov_section
 contains the counters used by @option{-ftest-coverage}

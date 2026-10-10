@@ -2,6 +2,8 @@
 
 set -e
 
+# Zig ARM builds enable VFP; external compilers may set TCC_ARM_VFP=no.
+
 # Note: "{r3}" is definitely different--but would complicate the assembler.
 
 state="`mktemp -d`"
@@ -19,7 +21,7 @@ do
 	as_opts=""
 	if [ "${s#v}" != "${s}" ]
 	then
-		if grep -q "CONFIG_arm_vfp=yes" ../config.mak
+		if [ "${TCC_ARM_VFP:-yes}" = yes ]
 		then
 			as_opts="${as_opts} -mfpu=vfp"
 		else

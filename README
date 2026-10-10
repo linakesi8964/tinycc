@@ -27,19 +27,67 @@ Features:
 Documentation:
 -------------
 
-1) Installation on Linux, BSD variants or macOS hosts:
+1) Build and installation (Zig 0.16.0)
 
-   ./configure
-   make
-   make test
-   make install
+   zig build
+   zig build test
+   zig build run -- -run examples/ex1.c
 
-   Notes: On BSD hosts, gmake should be used instead of make.
-   For Windows read tcc-win32.txt.
+Zig is the only build tool required. It compiles the C sources, generates
+configuration and builtin headers, and bootstraps TinyCC's runtime. No
+Make, configure, external C compiler, archiver, Python or Perl is needed.
+Native Unix builds require the platform's libc development headers;
+macOS requires the Command Line Tools SDK (automatically found via xcrun).
+Windows uses the headers and import definitions bundled in this repository.
 
-makeinfo must be installed to compile the doc.  By default, tcc is
-installed in /usr/local/bin.  ./configure --help  shows configuration
-options.
+The default output is zig-out/:
+   bin/tcc                 compiler (tcc.exe on Windows)
+   lib/libtcc.a            embedding library (lib/tcc.lib on Windows)
+   include/libtcc.h        public embedding API
+   lib/tcc/                runtime objects, library and TinyCC headers
+
+   zig build -Doptimize=ReleaseFast
+   zig build -Dshared=true
+   zig build --prefix /your/install/prefix
+   zig build --help
+
+Building also installs into the selected prefix. The prefix is compiled
+into TinyCC; after moving the installation, pass -B/path/to/lib/tcc.
+Shared builds install libtcc.so, libtcc.dylib or tcc.dll as appropriate.
+The source manual and license are installed in share/doc/tcc. Rendering
+Texinfo is not part of the build, so documentation tools are not required.
+
+Use -Dtarget for the platform on which the compiler will run, and
+-Dtcc-target to override the platform for which it generates code:
+
+   zig build -Dtarget=x86_64-windows-gnu --prefix zig-out/windows
+   zig build -Dtcc-target=x86_64-linux-gnu -Dsysroot=/path/to/sysroot
+
+Supported CPU backends: x86, x86_64, arm, aarch64, riscv64. OS targets:
+Linux, macOS (x86_64/aarch64), Windows and FreeBSD/NetBSD/OpenBSD.
+Cross builds use a host TinyCC bootstrap to generate the target runtime;
+Unix target runtime builds require target libc headers via -Dsysroot.
+Use -Druntime=false to build just the compiler and embedding library.
+Run tests on a native target. Foreign binaries require an appropriate host.
+
+Other options: -Dbacktrace=false, -Dbcheck=false, -Ddwarf=4, -Dtriplet=...,
+-Dtccdir=..., -Dsysinclude=..., -Dlibpaths=..., -Dcrtprefix=...,
+-Delfinterp=.... Search paths use ':' on Unix and ';' on Windows.
+
+Tests are driven by Zig and run in temporary cache directories:
+
+   zig build test                  regression, preprocessor, API, ABI, bootstrap
+   zig build tests2                compiler regression tests
+   zig build test-pp               preprocessor tests
+   zig build tests2 -Dtest-filter=139_
+
+Existing platform exclusions are preserved and counted as skipped tests.
+The bootstrap test compares three TinyCC generations with Zig's C compiler.
+Memory debugging, bounds checking and DLL self-hosting are also exercised.
+The standalone gcctestsuite.sh and arm-asm-testsuite.sh scripts are optional
+external-tool comparisons, and are not dependencies of any Zig build step.
+Build products stay in .zig-cache/ and zig-out/; remove these directories
+for a completely clean build.
 
 
 2) Introduction
@@ -77,11 +125,11 @@ tcc.c: TCC can of course compile itself. Used to check the code
 generator.
 
 tcctest.c: auto test for TCC which tests many subtle possible bugs. Used
-when doing 'make test'.
+when doing 'zig build test'.
 
 4) Full Documentation
 
-Please read tcc-doc.html to have all the features of TCC.  Additional
+Please read tcc-doc.texi for all the features of TCC. Additional
 information for the Windows port is in tcc-win32.txt.
 
 License:

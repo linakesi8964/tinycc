@@ -68,3 +68,7 @@ tests/vla_test
 tests/hello
 tests/tests2/fred.txt
 libtcc.dylib
+
+# Zig build outputs
+.zig-cache/
+zig-out/

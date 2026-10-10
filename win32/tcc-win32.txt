@@ -20,8 +20,8 @@
 
     Include and library search paths
     --------------------------------
-    On windows,  the standard "include" and "lib" directories are searched
-    relatively from the location of the executables (tcc.exe, libtcc.dll).
+    TinyCC uses the lib/tcc directory under the build installation prefix.
+    When moving an installation, pass -B<new-prefix>/lib/tcc.
 
 
     Examples:
@@ -45,20 +45,15 @@
 
     Using libtcc as JIT compiler in your program
     --------------------------------------------
-    Check out the 'libtcc_test' example:
+    Build the shared embedding library from the repository root:
+        zig build -Dshared=true
 
-    - Running it from source:
-        tcc -I libtcc libtcc/libtcc.def -run examples/libtcc_test.c
+    Compile the example with TinyCC:
+        zig-out/bin/tcc tests/libtcc_test.c -Izig-out/include zig-out/lib/tcc.def -o libtcc_test.exe
 
-    - Compiling with TCC:
-        tcc examples/libtcc_test.c -I libtcc libtcc/libtcc.def
-
-    - Compiling with MinGW:
-        gcc examples/libtcc_test.c -I libtcc libtcc.dll -o libtcc_test.exe
-
-    - Compiling with MSVC:
-        lib /def:libtcc\libtcc.def /out:libtcc.lib
-        cl /MD examples/libtcc_test.c -I libtcc libtcc.lib
+    Add zig-out/bin to PATH so the example can load tcc.dll. Zig also
+    installs an import library for clients built with Zig's C compiler.
+    Static embedding is the default when -Dshared is not specified.
 
 
     Import Definition Files:
@@ -130,33 +125,16 @@
 
     Compilation from source:
     ------------------------
-    * You can use the MinGW and MSYS tools available at
-        http://www.mingw.org
-        http://www.mingw-w64.org
-        http://www.msys2.org
+    Install Zig 0.16.0 and run these commands from the repository root:
 
-      Untar the TCC archive and type in the MSYS shell:
-        ./configure [--prefix installpath]
-        make
-        make install
+        zig build -Doptimize=ReleaseFast
+        zig build test
+        zig build --prefix C:/tools/tcc
 
-      The default install location is c:\Program Files\tcc
-
-      Cygwin can be used too with its mingw cross-compiler installed:
-        ./configure --cross-prefix=i686-w64-mingw32-
-        (the prefix may vary)
-
-    * Alternatively you can compile TCC with just GCC from MinGW using
-        > build-tcc.bat (from the win32 directory)
-
-      Also MSVC can be used with the "VSTools Developer Command Prompt":
-        > build-tcc.bat -c cl
-
-      or with an existing tcc (needs to be in a different directory)
-        > build-tcc.bat -c some-tcc-dir\tcc.exe
-
-      Also you can copy/install everything into another directory:
-        > build-tcc.bat -i <dir>
+    No MSYS, Make, GCC or Visual Studio compiler is required. See README
+    for shared-library builds and cross-compilation options. The compiler
+    is installed in bin, the embedding API in include, and TinyCC support
+    files in lib/tcc. Add the installation's bin directory to PATH.
 
     Limitations:
     ------------
